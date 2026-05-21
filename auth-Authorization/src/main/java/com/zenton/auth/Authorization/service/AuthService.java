@@ -5,15 +5,13 @@ import com.zenton.auth.Authorization.dtos.*;
 import com.zenton.auth.Authorization.entity.RefreshToken;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -51,9 +49,9 @@ public class AuthService {
         if (user == null) {
             return new LoginResponseDto("", "", "", "User not authenticated invalid user");
         }
-        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(loginRequestDto.getUsername());
+        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(user);
         if (refreshToken == null) {
-            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(loginRequestDto.getUsername());
+            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(user);
 
 
             String token = authUtil.generateAccessToken(user);
@@ -78,5 +76,43 @@ public class AuthService {
         String jwt = authUtil.generateAccessToken(refreshToken.getUser());
         return new RefreshTokenResponse(jwt, RefreshTokenStatus.Valid, "Refresh Token is valid, Jwt token is generated ");
     }
+
+    @Transactional
+    public LogoutResponseDto logout(String token){
+        RefreshToken refreshToken = refreshTokenService.findByToken(token).orElse(null);
+        if(refreshToken != null){
+            refreshTokenService.delete(refreshToken);
+        }
+        return new LogoutResponseDto(refreshToken.getUser().getUsername(),"User has been logged out successfully!");
+    }
+
+    /* JWT expired
+               ↓
+    Backend returns 401 Unauthorized
+               ↓
+    Frontend intercepts 401
+               ↓
+    Frontend calls /refresh endpoint
+               ↓
+    Browser automatically sends refresh cookie
+                ↓
+    Backend validates refresh token
+               ↓
+    Backend generates NEW JWT
+               ↓
+    Frontend retries original request
+    */
+
+    // logout
+
+    /*
+        Frontend calls /logout
+    ↓
+    Backend deletes refresh token from DB
+    ↓
+    Backend clears cookie
+    ↓
+    Frontend deletes JWT
+     */
 
 }

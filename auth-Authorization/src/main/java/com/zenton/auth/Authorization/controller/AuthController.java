@@ -48,4 +48,42 @@ public class AuthController {
               return ResponseEntity.ok(authService.refreshToken(refreshToken));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<LogoutResponseDto> logout(@CookieValue("refreshToken")
+                                                   String refreshToken){
+        return ResponseEntity.ok(authService.logout(refreshToken));
+    }
+
 }
+
+/*
+    SIGNUP FLOW
+    User signup
+        ↓
+    Store in DB
+        ↓
+    Optional:
+        store lightweight user in Redis
+    LOGIN FLOW
+    AuthenticationManager authenticates
+         ↓
+    User already loaded from DB
+         ↓
+    Optionally cache user
+         ↓
+    Generate JWT
+         ↓
+    Generate refresh token
+    JWT FILTER FLOW
+    Extract username from JWT
+          ↓
+    Check Redis
+          ↓
+    If found:
+        authenticate
+    Else:
+        DB query
+        cache result
+
+    Perfect architecture
+ */
