@@ -49,9 +49,9 @@ public class AuthService {
         if (user == null) {
             return new LoginResponseDto("", "", "", "User not authenticated invalid user");
         }
-        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(loginRequestDto.getUsername());
+        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(user);
         if (refreshToken == null) {
-            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(loginRequestDto.getUsername());
+            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(user);
 
 
             String token = authUtil.generateAccessToken(user);

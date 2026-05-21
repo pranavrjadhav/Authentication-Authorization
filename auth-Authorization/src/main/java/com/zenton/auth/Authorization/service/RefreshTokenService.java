@@ -26,9 +26,9 @@ public class RefreshTokenService {
     private  final RefreshTokenRepository refreshTokenRepository;
     private  final UserRepository userRepository;
 
-    public RefreshToken createRefreshToken(String username){
+    public RefreshToken createRefreshToken(User user){
         RefreshToken refreshToken = RefreshToken.builder()
-                .user(userRepository.findByUsername(username).orElseThrow())
+                .user(user)
                 .token(UUID.randomUUID().toString())
                 .expiryDate(new Date(System.currentTimeMillis() + 1000*60*5))
                 .build();
@@ -39,10 +39,7 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
-    public RefreshToken findByUserIdIfTokenExistsForTheseUser(String username){
-        User user = userRepository.findByUsername(username)
-                .orElse(null);
-
+    public RefreshToken findByUserIdIfTokenExistsForTheseUser(User user){
         if (user == null) {
             return null;
         }

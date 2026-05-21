@@ -55,3 +55,35 @@ public class AuthController {
     }
 
 }
+
+/*
+    SIGNUP FLOW
+    User signup
+        ↓
+    Store in DB
+        ↓
+    Optional:
+        store lightweight user in Redis
+    LOGIN FLOW
+    AuthenticationManager authenticates
+         ↓
+    User already loaded from DB
+         ↓
+    Optionally cache user
+         ↓
+    Generate JWT
+         ↓
+    Generate refresh token
+    JWT FILTER FLOW
+    Extract username from JWT
+          ↓
+    Check Redis
+          ↓
+    If found:
+        authenticate
+    Else:
+        DB query
+        cache result
+
+    Perfect architecture
+ */

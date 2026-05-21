@@ -26,7 +26,7 @@ public class AuthUtil {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000*60*2))
+                .expiration(new Date(System.currentTimeMillis() + 1000*60*5))
                 .signWith(getSecrectKey())
                 .compact();
     }
