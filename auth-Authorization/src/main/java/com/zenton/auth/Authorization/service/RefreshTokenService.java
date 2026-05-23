@@ -61,6 +61,7 @@ public class RefreshTokenService {
     }
 
     public void delete(RefreshToken refreshToken) {
+
         refreshTokenRepository.delete(refreshToken);
     }
 

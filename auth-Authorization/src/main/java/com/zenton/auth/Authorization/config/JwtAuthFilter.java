@@ -1,6 +1,9 @@
 package com.zenton.auth.Authorization.config;
 
+import com.zenton.auth.Authorization.dtos.CacheTtl;
+import com.zenton.auth.Authorization.dtos.CacheType;
 import com.zenton.auth.Authorization.dtos.CachedUser;
+import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
 import com.zenton.auth.Authorization.service.CacheService;
@@ -42,12 +45,19 @@ public class JwtAuthFilter extends OncePerRequestFilter{
             String token = requestTokenHeader.split("Bearer ")[1];
             System.out.println("bearer token :--- "+token);
 
-            String username = authUtil.getUsernameFromToken(token);
+            JwtClaimsDto jwtClaimsDto = authUtil.getUserClaim(token);
+            String username = jwtClaimsDto.getUsername();
+            // check for blacklisted token
+            String blackListed = cacheService.get(CacheType.blackListedJwt, jwtClaimsDto.getJti(),String.class);
+            if(blackListed != null){
+                throw new RuntimeException("JWT token revoked");
+            }
+            // for else part jwt parseSignedClaims check for expiration internally and threo execption.
 
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
 //
 
-                CachedUser cachedUser = cacheService.get(username);
+                CachedUser cachedUser = cacheService.get(CacheType.user,username,CachedUser.class);
                 if(cachedUser != null){
                     List<SimpleGrantedAuthority> authorities =
                             cachedUser.getRoles()
@@ -76,7 +86,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
                                         )
                                         .build();
 
-                        cacheService.save(cachedUser1);
+                        cacheService.save(CacheType.user, cachedUser1.getUsername(), cachedUser1, CacheTtl.USER.getDuration());
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                             new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

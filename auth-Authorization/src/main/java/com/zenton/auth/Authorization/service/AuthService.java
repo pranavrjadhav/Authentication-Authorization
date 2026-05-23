@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -22,6 +24,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUtil authUtil;
     private final RefreshTokenService refreshTokenService;
+    private final CacheService cacheService;
 
     public SignupResponseDto singup(SignUpRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
@@ -78,9 +81,14 @@ public class AuthService {
     }
 
     @Transactional
-    public LogoutResponseDto logout(String token){
+    public LogoutResponseDto logout(String token,String authHeader){
         RefreshToken refreshToken = refreshTokenService.findByToken(token).orElse(null);
+        String jwtToken = authHeader.split("Bearer ")[1];
+        JwtClaimsDto jwtClaimsDto = authUtil.getUserClaim(jwtToken);
+
         if(refreshToken != null){
+            long remainingMillis = jwtClaimsDto.getExpirationTime().getTime()-System.currentTimeMillis();
+            cacheService.save(CacheType.blackListedJwt,jwtClaimsDto.getJti(),"revoked",Duration.ofMillis(remainingMillis));
             refreshTokenService.delete(refreshToken);
         }
         return new LogoutResponseDto(refreshToken.getUser().getUsername(),"User has been logged out successfully!");

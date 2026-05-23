@@ -50,9 +50,20 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponseDto> logout(@CookieValue("refreshToken")
-                                                   String refreshToken){
-        return ResponseEntity.ok(authService.logout(refreshToken));
+                                                   String refreshToken,
+                                                    @RequestHeader("Authorization") String authHeader){
+        return ResponseEntity.ok(authService.logout(refreshToken,authHeader));
     }
+
+    // blacklist jwt token after logout
+    /*      1. User sends logout request
+            2. JWT extracted
+            3. Parse token
+            4. Get jti
+            5. Store jti in Redis blacklist
+            6. TTL = remaining token lifetime
+            7. Delete refresh token
+     */
 
 }
 
