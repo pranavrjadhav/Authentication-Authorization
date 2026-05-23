@@ -1,5 +1,6 @@
 package com.zenton.auth.Authorization.config;
 
+import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
 import com.zenton.auth.Authorization.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class AuthUtil {
@@ -24,6 +26,7 @@ public class AuthUtil {
 
     public String generateAccessToken(User user){
         return Jwts.builder()
+                .id(UUID.randomUUID().toString()) // jti
                 .subject(user.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000*60*5))
@@ -52,13 +55,17 @@ public class AuthUtil {
 
     //1000 * 60 * 60 * 24 * 7 = 7 days
 
-    public String getUsernameFromToken(String token){
+    public JwtClaimsDto getUserClaim(String token){
         Claims claims = Jwts.parser()
                 .verifyWith(getSecrectKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.getSubject();
+        return  JwtClaimsDto.builder()
+                .jti(claims.getId())
+                .username(claims.getSubject())
+                .expirationTime(claims.getExpiration())
+                .build();
     }
 
 }
