@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class AuthService {
         user = User.builder()
                 .username(requestDto.getUsername())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
+                .roles(Set.of(RoleType.USER))
                 .build();
 
         user = userRepository.save(user);

@@ -16,6 +16,9 @@ import java.util.UUID;
 @Component
 public class AuthUtil {
 
+    //on browser time standard is GMT our local is IST
+    //Add 5:30 to GMT → IST
+    //Subtract 5:30 from IST → GMT
 
     @Value("${jwt.secretKey}")
     private String jwtSecrectKey;
@@ -29,7 +32,7 @@ public class AuthUtil {
                 .id(UUID.randomUUID().toString()) // jti
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000*60*5))
+                .expiration(new Date(System.currentTimeMillis() + 1000*60*10))
                 .signWith(getSecrectKey())
                 .compact();
     }

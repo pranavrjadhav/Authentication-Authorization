@@ -30,7 +30,7 @@ public class RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
-                .expiryDate(new Date(System.currentTimeMillis() + 1000*60*5))
+                .expiryDate(new Date(System.currentTimeMillis() + 1000*60*30))
                 .build();
         return  refreshTokenRepository.save(refreshToken);
     }
