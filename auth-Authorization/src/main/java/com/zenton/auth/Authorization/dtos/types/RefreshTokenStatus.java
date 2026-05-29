@@ -1,4 +1,4 @@
-package com.zenton.auth.Authorization.dtos;
+package com.zenton.auth.Authorization.dtos.types;
 
 public enum RefreshTokenStatus {
     Valid,

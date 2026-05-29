@@ -1,6 +1,6 @@
 package com.zenton.auth.Authorization.controller;
 
-import com.zenton.auth.Authorization.dtos.*;
+import com.zenton.auth.Authorization.dtos.Authdtos.*;
 import com.zenton.auth.Authorization.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;

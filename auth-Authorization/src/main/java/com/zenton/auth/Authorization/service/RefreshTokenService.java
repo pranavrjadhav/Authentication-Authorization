@@ -1,5 +1,6 @@
 package com.zenton.auth.Authorization.service;
 
+import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
 import com.zenton.auth.Authorization.entity.RefreshToken;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.RefreshTokenRepository;
@@ -26,11 +27,11 @@ public class RefreshTokenService {
     private  final RefreshTokenRepository refreshTokenRepository;
     private  final UserRepository userRepository;
 
-    public RefreshToken createRefreshToken(User user){
+    public RefreshToken createRefreshToken(AuthenticatedUser authenticatedUser){
         RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
+                .userId(authenticatedUser.getId())
                 .token(UUID.randomUUID().toString())
-                .expiryDate(new Date(System.currentTimeMillis() + 1000*60*30))
+                .expiryDate(new Date(System.currentTimeMillis() + 1000*60*15))
                 .build();
         return  refreshTokenRepository.save(refreshToken);
     }
@@ -39,12 +40,12 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByToken(token);
     }
 
-    public RefreshToken findByUserIdIfTokenExistsForTheseUser(User user){
+    public RefreshToken findByUserIdIfTokenExistsForTheseUser(AuthenticatedUser user){
         if (user == null) {
             return null;
         }
         RefreshToken refreshToken =
-                refreshTokenRepository.findByUser(user)
+                refreshTokenRepository.findByUserId(user.getId())
                         .orElse(null);
         if(refreshToken != null){
             return verifyExpiration(refreshToken);

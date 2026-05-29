@@ -1,15 +1,15 @@
-package com.zenton.auth.Authorization.dtos;
+package com.zenton.auth.Authorization.dtos.Authdtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignUpRequestDto {
+@Builder
+public class SignupResponseDto {
+    private Long id;
     private String username;
-    private String password;
-
-//    private Set<RoleType> roles = new HashSet<>();
 }

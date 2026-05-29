@@ -1,16 +1,16 @@
 package com.zenton.auth.Authorization.config;
 
-import com.zenton.auth.Authorization.dtos.PermissionType;
-import com.zenton.auth.Authorization.dtos.RoleType;
+import com.zenton.auth.Authorization.dtos.types.PermissionType;
+import com.zenton.auth.Authorization.dtos.types.RoleType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.zenton.auth.Authorization.dtos.PermissionType.*;
-import static com.zenton.auth.Authorization.dtos.RoleType.ADMIN;
-import static com.zenton.auth.Authorization.dtos.RoleType.USER;
+import static com.zenton.auth.Authorization.dtos.types.PermissionType.*;
+import static com.zenton.auth.Authorization.dtos.types.RoleType.ADMIN;
+import static com.zenton.auth.Authorization.dtos.types.RoleType.USER;
 
 public class RolesPermissionMapping {
 

@@ -1,6 +1,7 @@
 package com.zenton.auth.Authorization.config;
 
-import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Authdtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
 import com.zenton.auth.Authorization.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -27,7 +28,7 @@ public class AuthUtil {
         return Keys.hmacShaKeyFor(jwtSecrectKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(User user){
+    public String generateAccessToken(AuthenticatedUser user){
         return Jwts.builder()
                 .id(UUID.randomUUID().toString()) // jti
                 .subject(user.getUsername())

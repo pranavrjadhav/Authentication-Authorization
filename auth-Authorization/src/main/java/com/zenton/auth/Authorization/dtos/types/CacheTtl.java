@@ -1,4 +1,4 @@
-package com.zenton.auth.Authorization.dtos;
+package com.zenton.auth.Authorization.dtos.types;
 
 import lombok.Getter;
 
@@ -7,7 +7,7 @@ import java.time.Duration;
 @Getter
 public enum CacheTtl {
 
-    USER(Duration.ofMinutes(5));
+    USER(Duration.ofMinutes(30));
 
     private final Duration duration;
 

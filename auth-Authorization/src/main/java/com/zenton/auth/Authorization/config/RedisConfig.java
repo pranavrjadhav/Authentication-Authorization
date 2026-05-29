@@ -15,7 +15,7 @@ RedisCacheManager
 RedisTemplate
     = manual Redis programming
 
-    docker exec -it <redis-container> redis-cli
+    docker exec -it auth-authorization-redis-1 redis-cli
  */
 @Configuration
 public class RedisConfig {

@@ -1,7 +1,12 @@
 package com.zenton.auth.Authorization.service;
 
 import com.zenton.auth.Authorization.config.AuthUtil;
-import com.zenton.auth.Authorization.dtos.*;
+import com.zenton.auth.Authorization.config.SecurityConfigUtil;
+import com.zenton.auth.Authorization.dtos.Authdtos.*;
+import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
+import com.zenton.auth.Authorization.dtos.types.CacheType;
+import com.zenton.auth.Authorization.dtos.types.RefreshTokenStatus;
+import com.zenton.auth.Authorization.dtos.types.RoleType;
 import com.zenton.auth.Authorization.entity.RefreshToken;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
@@ -10,11 +15,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Set;
 
 @Service
@@ -27,6 +32,7 @@ public class AuthService {
     private final AuthUtil authUtil;
     private final RefreshTokenService refreshTokenService;
     private final CacheService cacheService;
+    private final SecurityConfigUtil securityConfigUtil;
 
     public SignupResponseDto singup(SignUpRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
@@ -51,26 +57,47 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword())
         );
-        User user = (User) authentication.getPrincipal();
-        if (user == null) {
+        AuthenticatedUser authenticatedUser =
+                (AuthenticatedUser) authentication.getPrincipal();
+        if (authenticatedUser == null) {
             return new LoginResponseDto("", "", "", "User not authenticated invalid user");
         }
-        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(user);
+        RefreshToken refreshToken = refreshTokenService.findByUserIdIfTokenExistsForTheseUser(authenticatedUser);
         if (refreshToken == null) {
-            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(user);
+            RefreshToken refreshToken1 = refreshTokenService.createRefreshToken(authenticatedUser);
 
 
-            String token = authUtil.generateAccessToken(user);
+            String token = authUtil.generateAccessToken(authenticatedUser);
 
-            return new LoginResponseDto(token, user.getUsername(), refreshToken1.getToken(), "User validated successfully with new token !");
+            return new LoginResponseDto(token, authenticatedUser.getUsername(), refreshToken1.getToken(), "User validated successfully with new token !");
         }
         // authenticationManager ----> providerManager ---->DaoAuthenticationProvider--------->(method call) --> retrieveUser --> additionalAuthenticationChecks --> createSuccessAuthentication (return Authentication object)
-        String token = authUtil.generateAccessToken(user);
+        String token = authUtil.generateAccessToken(authenticatedUser);
 
-        return new LoginResponseDto(token, user.getUsername(), refreshToken.getToken(), "User validated successfully same token!");
+        return new LoginResponseDto(token, authenticatedUser.getUsername(), refreshToken.getToken(), "User validated successfully same token!");
     }
 
+    /*AuthenticationManager.authenticate()
+            ↓
+    ProviderManager
+            ↓
+    DaoAuthenticationProvider
+            ↓
+    UserDetailsService.loadUserByUsername()
+            ↓
+    userRepository.findByUsername()
+            ↓
+    returns UserDetails
+            ↓
+    PasswordEncoder.matches(raw, encoded)
+            ↓
+    if valid:
+        authenticated Authentication object returned
+
+     */
+
     public RefreshTokenResponse refreshToken(String token) {
+        AuthenticatedUser authenticatedUser = securityConfigUtil.getCurrentUser();
         RefreshToken refreshToken = refreshTokenService.findByToken(token).orElse(null);
         if (refreshToken == null) {
             return new RefreshTokenResponse("", RefreshTokenStatus.NotExists, "RefreshToken doesn't Exist, Redirect user to login page");
@@ -79,12 +106,13 @@ public class AuthService {
         if (refreshToken1 == null) {
             return new RefreshTokenResponse("", RefreshTokenStatus.Expired, "RefreshToken is Expired, Redirect user to login page");
         }
-        String jwt = authUtil.generateAccessToken(refreshToken.getUser());
+        String jwt = authUtil.generateAccessToken(authenticatedUser);
         return new RefreshTokenResponse(jwt, RefreshTokenStatus.Valid, "Refresh Token is valid, Jwt token is generated ");
     }
 
     @Transactional
     public LogoutResponseDto logout(String token,String authHeader){
+        AuthenticatedUser authenticatedUser = securityConfigUtil.getCurrentUser();
         RefreshToken refreshToken = refreshTokenService.findByToken(token).orElse(null);
         String jwtToken = authHeader.split("Bearer ")[1];
         JwtClaimsDto jwtClaimsDto = authUtil.getUserClaim(jwtToken);
@@ -94,7 +122,7 @@ public class AuthService {
             cacheService.save(CacheType.blackListedJwt,jwtClaimsDto.getJti(),"revoked",Duration.ofMillis(remainingMillis));
             refreshTokenService.delete(refreshToken);
         }
-        return new LogoutResponseDto(refreshToken.getUser().getUsername(),"User has been logged out successfully!");
+        return new LogoutResponseDto(authenticatedUser.getUsername(),"User has been logged out successfully!");
     }
 
     /* JWT expired
