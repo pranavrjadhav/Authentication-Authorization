@@ -1,9 +1,6 @@
 package com.zenton.auth.Authorization.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -23,4 +20,7 @@ public class Car {
     private String brand;
 
     private int price;
+
+    @Column(nullable = false)
+    private Long userId;
 }

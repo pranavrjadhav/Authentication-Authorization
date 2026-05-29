@@ -1,8 +1,6 @@
 package com.zenton.auth.Authorization.service;
 
-import com.zenton.auth.Authorization.dtos.CacheType;
-import com.zenton.auth.Authorization.dtos.CachedUser;
-import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.types.CacheType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

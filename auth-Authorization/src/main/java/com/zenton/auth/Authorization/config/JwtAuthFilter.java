@@ -1,9 +1,11 @@
 package com.zenton.auth.Authorization.config;
 
-import com.zenton.auth.Authorization.dtos.CacheTtl;
-import com.zenton.auth.Authorization.dtos.CacheType;
-import com.zenton.auth.Authorization.dtos.CachedUser;
-import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Authdtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Cachedtos.CachedUser;
+import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
+import com.zenton.auth.Authorization.dtos.types.CacheTtl;
+import com.zenton.auth.Authorization.dtos.types.CacheType;
+import com.zenton.auth.Authorization.dtos.types.RoleType;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
 import com.zenton.auth.Authorization.service.CacheService;
@@ -14,19 +16,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter{
-
+// In jwtfilter we store the principle
 
     private final AuthUtil authUtil;
     private final UserRepository repo;
@@ -59,15 +62,33 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 
                 CachedUser cachedUser = cacheService.get(CacheType.user,username,CachedUser.class);
                 if(cachedUser != null){
-                    List<SimpleGrantedAuthority> authorities =
-                            cachedUser.getRoles()
-                                    .stream()
-                                    .map(SimpleGrantedAuthority::new)
-                                    .toList();
+//                    List<SimpleGrantedAuthority> authorities =
+//                            cachedUser.getRoles()
+//                                    .stream()
+//                                    .map(SimpleGrantedAuthority::new)
+//                                    .collect(Collectors.toSet());
                     System.out.println("got user from cache:--- "+cachedUser.getUsername());
 
+//                    Set<RoleType> roles =
+//                            cachedUser.getRoles()
+//                                    .stream()
+//                                    .map(RoleType::valueOf)
+//                                    .collect(Collectors.toSet());
+
+                    Set<RoleType> roles =
+                            cachedUser.getRoles()
+                                    .stream()
+                                    .map(RoleType::valueOf)
+                                    .collect(Collectors.toSet());
+
+                    AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
+                            .username(cachedUser.getUsername())
+                            .id(cachedUser.getId())
+                            .roles(roles)
+                            .build();
+
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                            new UsernamePasswordAuthenticationToken(cachedUser,null,authorities);
+                            new UsernamePasswordAuthenticationToken(authenticatedUser,null,authenticatedUser.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }else{
                     User user = repo.findByUsername(username).orElseThrow();
@@ -79,16 +100,28 @@ public class JwtAuthFilter extends OncePerRequestFilter{
                                         .id(user.getId())
                                         .username(user.getUsername())
                                         .roles(
-                                                user.getAuthorities()
+                                                user.getRoles()
                                                         .stream()
-                                                        .map(GrantedAuthority::getAuthority)
-                                                        .toList()
+                                                        .map(RoleType::name)
+                                                        .collect(Collectors.toSet())
                                         )
                                         .build();
+                    Set<RoleType> roles =
+                            cachedUser1.getRoles()
+                                    .stream()
+                                    .map(RoleType::valueOf)
+                                    .collect(Collectors.toSet());
+
+
+                    AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
+                                    .id(user.getId())
+                                    .username(user.getUsername())
+                                    .roles(roles)
+                                    .build();
 
                         cacheService.save(CacheType.user, cachedUser1.getUsername(), cachedUser1, CacheTtl.USER.getDuration());
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                            new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(authenticatedUser,null,authenticatedUser.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
                 }

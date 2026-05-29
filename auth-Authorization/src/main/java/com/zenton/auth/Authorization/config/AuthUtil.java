@@ -1,6 +1,7 @@
 package com.zenton.auth.Authorization.config;
 
-import com.zenton.auth.Authorization.dtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Authdtos.JwtClaimsDto;
+import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
 import com.zenton.auth.Authorization.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -16,6 +17,9 @@ import java.util.UUID;
 @Component
 public class AuthUtil {
 
+    //on browser time standard is GMT our local is IST
+    //Add 5:30 to GMT → IST
+    //Subtract 5:30 from IST → GMT
 
     @Value("${jwt.secretKey}")
     private String jwtSecrectKey;
@@ -24,12 +28,12 @@ public class AuthUtil {
         return Keys.hmacShaKeyFor(jwtSecrectKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(User user){
+    public String generateAccessToken(AuthenticatedUser user){
         return Jwts.builder()
                 .id(UUID.randomUUID().toString()) // jti
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000*60*5))
+                .expiration(new Date(System.currentTimeMillis() + 1000*60*10))
                 .signWith(getSecrectKey())
                 .compact();
     }

@@ -1,5 +1,6 @@
-package com.zenton.auth.Authorization.dtos;
+package com.zenton.auth.Authorization.dtos.Authdtos;
 
+import com.zenton.auth.Authorization.dtos.types.RefreshTokenStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

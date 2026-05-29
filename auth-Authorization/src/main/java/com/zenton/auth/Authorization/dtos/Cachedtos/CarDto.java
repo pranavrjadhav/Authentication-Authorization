@@ -1,4 +1,4 @@
-package com.zenton.auth.Authorization.dtos;
+package com.zenton.auth.Authorization.dtos.Cachedtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

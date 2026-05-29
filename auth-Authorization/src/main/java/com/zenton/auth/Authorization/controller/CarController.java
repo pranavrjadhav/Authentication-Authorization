@@ -1,6 +1,6 @@
 package com.zenton.auth.Authorization.controller;
 
-import com.zenton.auth.Authorization.dtos.CarDto;
+import com.zenton.auth.Authorization.dtos.Cachedtos.CarDto;
 import com.zenton.auth.Authorization.entity.Car;
 import com.zenton.auth.Authorization.service.CarService;
 import lombok.RequiredArgsConstructor;
