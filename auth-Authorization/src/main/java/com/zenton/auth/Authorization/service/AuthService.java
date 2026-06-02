@@ -8,7 +8,9 @@ import com.zenton.auth.Authorization.dtos.types.CacheType;
 import com.zenton.auth.Authorization.dtos.types.RefreshTokenStatus;
 import com.zenton.auth.Authorization.dtos.types.RoleType;
 import com.zenton.auth.Authorization.entity.RefreshToken;
+import com.zenton.auth.Authorization.entity.Role;
 import com.zenton.auth.Authorization.entity.User;
+import com.zenton.auth.Authorization.repository.RoleRepository;
 import com.zenton.auth.Authorization.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Set;
 
 @Service
@@ -33,15 +36,18 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final CacheService cacheService;
     private final SecurityConfigUtil securityConfigUtil;
+    private final RoleRepository roleRepository;
 
     public SignupResponseDto singup(SignUpRequestDto requestDto) {
-        User user = userRepository.findByUsername(requestDto.getUsername()).orElse(null);
+        User user = userRepository.findByUsernameWithRolesAndPermissions(requestDto.getUsername()).orElse(null);
         if (user != null) throw new IllegalArgumentException("User Already exists");
+
+        Set<Role> role = Collections.singleton(roleRepository.findByName(RoleType.USER.name()).orElseThrow());
 
         user = User.builder()
                 .username(requestDto.getUsername())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
-                .roles(Set.of(RoleType.USER))
+                .roles(role)
                 .build();
 
         user = userRepository.save(user);

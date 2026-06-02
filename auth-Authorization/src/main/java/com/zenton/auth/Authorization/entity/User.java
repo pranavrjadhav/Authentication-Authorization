@@ -3,7 +3,10 @@ package com.zenton.auth.Authorization.entity;
 import com.zenton.auth.Authorization.dtos.types.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,11 +28,19 @@ public class User{
     @Column(unique = true,nullable = false)
     private String password;
 
-    @Builder.Default
-    @ElementCollection(fetch = FetchType.EAGER)  //create separate table only for these [String,Enum,Integer] not for entities we use onetomany relationship there
-    @Enumerated(EnumType.STRING) //store enum as strings else without these they store enum as number
-    Set<RoleType> roles = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
 
+    private LocalDateTime updatedAt;
 
 }

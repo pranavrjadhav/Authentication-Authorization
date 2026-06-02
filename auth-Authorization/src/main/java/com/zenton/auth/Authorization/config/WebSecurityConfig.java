@@ -1,6 +1,7 @@
 package com.zenton.auth.Authorization.config;
 
 
+import com.zenton.auth.Authorization.dtos.types.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,7 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**","/cars/**").permitAll()
-//                        .requestMatchers("/cars/**").hasAllRoles(RoleType.ADMIN.name())
+                        .requestMatchers("/adminpanel/**").hasAllRoles(RoleType.ADMIN.name())
 
                                 .anyRequest().authenticated()
                 )
