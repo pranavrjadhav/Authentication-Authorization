@@ -6,6 +6,7 @@ import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
 import com.zenton.auth.Authorization.dtos.types.CacheTtl;
 import com.zenton.auth.Authorization.dtos.types.CacheType;
 import com.zenton.auth.Authorization.dtos.types.RoleType;
+import com.zenton.auth.Authorization.entity.Role;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
 import com.zenton.auth.Authorization.service.CacheService;
@@ -74,49 +75,69 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 //                                    .stream()
 //                                    .map(RoleType::valueOf)
 //                                    .collect(Collectors.toSet());
-
-                    Set<RoleType> roles =
-                            cachedUser.getRoles()
-                                    .stream()
-                                    .map(RoleType::valueOf)
-                                    .collect(Collectors.toSet());
+                    // roles amd permission added in authorities for SecurityContextHolder
+                    Set<String> authorities = new HashSet<>(cachedUser.getRoles());
+                    // for premission
+                    authorities.addAll(cachedUser.getPermissions());
 
                     AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
                             .username(cachedUser.getUsername())
                             .id(cachedUser.getId())
-                            .roles(roles)
+                            .authorities(authorities)
                             .build();
 
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                             new UsernamePasswordAuthenticationToken(authenticatedUser,null,authenticatedUser.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }else{
-                    User user = repo.findByUsername(username).orElseThrow();
+                    User user = repo.findByUsernameWithRolesAndPermissions(username).orElseThrow();
                     System.out.println("got user from db call:--- "+user.getUsername());
 
+                    // for redis cache
+                    Set<String> rolesCache = new HashSet<>();
+                    Set<String> permissionCache = new HashSet<>();
+                    for (Role role : user.getRoles()) {
+
+                        rolesCache.add(
+                                "ROLE_" + role.getName()
+                        );
+                        role.getPermissions()
+                                .forEach(permission ->
+                                               permissionCache.add(
+                                                        permission.getName()
+                                                )
+                                );
+                    }
 
                     CachedUser cachedUser1 =
                                 CachedUser.builder()
                                         .id(user.getId())
                                         .username(user.getUsername())
-                                        .roles(
-                                                user.getRoles()
-                                                        .stream()
-                                                        .map(RoleType::name)
-                                                        .collect(Collectors.toSet())
-                                        )
+                                        .roles(rolesCache)
+                                        .permissions(permissionCache)
                                         .build();
-                    Set<RoleType> roles =
-                            cachedUser1.getRoles()
-                                    .stream()
-                                    .map(RoleType::valueOf)
-                                    .collect(Collectors.toSet());
+
+
+                    // roles amd permission added in authorities for SecurityContextHolder
+                    Set<String> authorities = new HashSet<>();
+                    for (Role role : user.getRoles()) {
+
+                        authorities.add(
+                                "ROLE_" + role.getName()
+                        );
+                        role.getPermissions()
+                                .forEach(permission ->
+                                        authorities.add(
+                                                permission.getName()
+                                        )
+                                );
+                    }
 
 
                     AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
                                     .id(user.getId())
                                     .username(user.getUsername())
-                                    .roles(roles)
+                                    .authorities(authorities)
                                     .build();
 
                         cacheService.save(CacheType.user, cachedUser1.getUsername(), cachedUser1, CacheTtl.USER.getDuration());

@@ -14,4 +14,5 @@ public class CachedUser {
     private Long id;
     private String username;
     private Set<String> roles;
+    private Set<String> permissions;
 }

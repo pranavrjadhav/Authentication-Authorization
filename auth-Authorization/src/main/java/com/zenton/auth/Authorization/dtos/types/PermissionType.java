@@ -4,10 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum PermissionType {
-    ADMIN_MANAGE("user:manage"),  //admin
-    USER_READ("user:read"),
-    ADMIN_READ("admin:read"),
-    ADMIN_WRITE("admin:write");
+    Read("read"),  //admin
+    Write("write"),
+    Delete("delete"),
+    All_Access("allAccess");
+
 
 
     private final String value;

@@ -37,6 +37,24 @@ public class AuthUtil {
                 .signWith(getSecrectKey())
                 .compact();
     }
+    /*
+    we are not setting roles and permisisin in jwt but here is the sample to set in claim
+    public String generateAccessToken(AuthenticatedUser user){
+
+    return Jwts.builder()
+            .id(UUID.randomUUID().toString())
+            .subject(user.getUsername())
+            .claim("userId", user.getId())
+            .claim("authorities", user.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+            .signWith(getSecrectKey())
+            .compact();
+}
+     */
 
     // epirydate calculation  | Unit     | Value             |
     //| -------- | ----------------- |

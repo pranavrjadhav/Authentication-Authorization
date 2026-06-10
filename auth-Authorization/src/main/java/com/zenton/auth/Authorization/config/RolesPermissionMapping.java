@@ -14,15 +14,15 @@ import static com.zenton.auth.Authorization.dtos.types.RoleType.USER;
 
 public class RolesPermissionMapping {
 
-    private static final Map<RoleType, Set<PermissionType>> map = Map.of(
-            ADMIN,Set.of(ADMIN_MANAGE,ADMIN_WRITE,ADMIN_READ),
-            USER,Set.of(USER_READ)
-    );
-
-    public  static Set<SimpleGrantedAuthority> getAuthoritiesForRole(RoleType role){
-        return map.get(role).stream()
-                .map(permissionType -> new SimpleGrantedAuthority(permissionType.getValue()))
-                .collect(Collectors.toSet());
-    }
+//    private static final Map<RoleType, Set<PermissionType>> map = Map.of(
+//            ADMIN,Set.of(ADMIN_MANAGE,ADMIN_WRITE,ADMIN_READ),
+//            USER,Set.of(USER_READ)
+//    );
+//
+//    public  static Set<SimpleGrantedAuthority> getAuthoritiesForRole(RoleType role){
+//        return map.get(role).stream()
+//                .map(permissionType -> new SimpleGrantedAuthority(permissionType.getValue()))
+//                .collect(Collectors.toSet());
+//    }
 
 }
