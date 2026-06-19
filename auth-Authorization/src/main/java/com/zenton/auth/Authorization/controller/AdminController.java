@@ -43,10 +43,10 @@ public class AdminController {
     }
 
 
-//    @GetMapping("/getAllRoles&Permission")
-//    public  ResponseEntity<ListOfRolesAndPermission> getAllRolesPermission(){
-//         return  ResponseEntity.ok(adminService.getAllRolesPermission());
-//    }
+    @GetMapping("/getAllRoles&Permission")
+    public  ResponseEntity<ListOfRolesAndPermission> getAllRolesPermission(){
+         return  ResponseEntity.ok(adminService.getAllRolesPermission());
+    }
 
 
 

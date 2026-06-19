@@ -1,11 +1,11 @@
 package com.zenton.auth.Authorization.service;
 
-import com.zenton.auth.Authorization.dtos.Admindtos.ListOfRolesAndPermission;
-import com.zenton.auth.Authorization.dtos.Admindtos.UserGetAllDto;
-import com.zenton.auth.Authorization.dtos.Admindtos.UserGetByIdDto;
+import com.zenton.auth.Authorization.dtos.Admindtos.*;
 import com.zenton.auth.Authorization.entity.Permissions;
 import com.zenton.auth.Authorization.entity.Role;
 import com.zenton.auth.Authorization.entity.User;
+import com.zenton.auth.Authorization.repository.PermissionsRepository;
+import com.zenton.auth.Authorization.repository.RoleRepository;
 import com.zenton.auth.Authorization.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PermissionsRepository permissionsRepository;
 
     public Page<UserGetAllDto> getAllUsers(
             int page,
@@ -77,7 +80,24 @@ public class AdminService {
 
     }
 
-//    public ListOfRolesAndPermission getAllRolesPermission() {
-//
-//    }
+    public ListOfRolesAndPermission getAllRolesPermission() {
+        List<RoleDto> roles = roleRepository.findAll()
+                .stream()
+                .map(k -> RoleDto.builder().id(k.getId()).name(k.getName())
+                        .permissionIds(k.getPermissions()
+                                .stream()
+                                .map(l -> l.getId())
+                                .collect(Collectors.toSet())
+                        ).build()
+                ).toList();
+
+        List<PermissionDto> permissionDtos = permissionsRepository.findAll()
+                .stream()
+                .map(k -> PermissionDto.builder().id(k.getId()).name(k.getName()).build())
+                .toList();
+
+        return ListOfRolesAndPermission.builder()
+                        .roles(roles).permissions(permissionDtos)
+                .build();
+    }
 }

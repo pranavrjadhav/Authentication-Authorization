@@ -5,18 +5,16 @@ import com.zenton.auth.Authorization.dtos.Cachedtos.CachedUser;
 import com.zenton.auth.Authorization.dtos.Securitydtos.AuthenticatedUser;
 import com.zenton.auth.Authorization.dtos.types.CacheTtl;
 import com.zenton.auth.Authorization.dtos.types.CacheType;
-import com.zenton.auth.Authorization.dtos.types.RoleType;
 import com.zenton.auth.Authorization.entity.Role;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.UserRepository;
-import com.zenton.auth.Authorization.service.CacheService;
+import com.zenton.auth.Authorization.service.redisService.CacheService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,7 +23,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -35,7 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
     private final AuthUtil authUtil;
     private final UserRepository repo;
     private final HandlerExceptionResolver handlerExceptionResolver;
-    private final CacheService cacheService;
+    private final CacheService redisCacheService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -52,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
             JwtClaimsDto jwtClaimsDto = authUtil.getUserClaim(token);
             String username = jwtClaimsDto.getUsername();
             // check for blacklisted token
-            String blackListed = cacheService.get(CacheType.blackListedJwt, jwtClaimsDto.getJti(),String.class);
+            String blackListed = redisCacheService.get(CacheType.blackListedJwt, jwtClaimsDto.getJti(),String.class);
             if(blackListed != null){
                 throw new RuntimeException("JWT token revoked");
             }
@@ -61,7 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
 //
 
-                CachedUser cachedUser = cacheService.get(CacheType.user,username,CachedUser.class);
+                CachedUser cachedUser = redisCacheService.get(CacheType.user,username,CachedUser.class);
                 if(cachedUser != null){
 //                    List<SimpleGrantedAuthority> authorities =
 //                            cachedUser.getRoles()
@@ -140,7 +137,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
                                     .authorities(authorities)
                                     .build();
 
-                        cacheService.save(CacheType.user, cachedUser1.getUsername(), cachedUser1, CacheTtl.USER.getDuration());
+                        redisCacheService.save(CacheType.user, cachedUser1.getUsername(), cachedUser1, CacheTtl.USER.getDuration());
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                             new UsernamePasswordAuthenticationToken(authenticatedUser,null,authenticatedUser.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

@@ -23,7 +23,7 @@ public class CarService {
     private final SecurityConfigUtil securityConfigUtil;
     private final UserRepository userRepository;
 
-    @PreAuthorize("hasAuthority('carRegistry:allAccess')")
+    @PreAuthorize("hasRole('USER')")
     public Car createCar(CarDto dto) {
         AuthenticatedUser authenticatedUser = securityConfigUtil.getCurrentUser();
        Car car = Car.builder()
