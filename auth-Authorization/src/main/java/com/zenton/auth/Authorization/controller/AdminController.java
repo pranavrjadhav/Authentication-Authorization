@@ -1,14 +1,13 @@
 package com.zenton.auth.Authorization.controller;
 
+import com.zenton.auth.Authorization.dtos.Admindtos.ListOfRolesAndPermission;
 import com.zenton.auth.Authorization.dtos.Admindtos.UserGetAllDto;
+import com.zenton.auth.Authorization.dtos.Admindtos.UserGetByIdDto;
 import com.zenton.auth.Authorization.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/adminpanel/")
@@ -16,6 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final AdminService adminService;
+
+    //totalPages =
+    //    (totalRecords + size - 1) / size;
+
+    //offset = (page) * size;
+    //exp:-- size = 10;
+    //Page 0 -> 1-10
+    //Page 1 -> 11-20
+    //...
+    //Page 9 -> 91-95
 
     @GetMapping("/getalluser")
     public ResponseEntity<Page<UserGetAllDto>> getAllUser(
@@ -26,5 +35,21 @@ public class AdminController {
                 adminService.getAllUsers(page,size,username)
         );
     }
+
+//    get user by id/name
+    @GetMapping("/getbyuserid/{userid}")
+    public ResponseEntity<UserGetByIdDto> getUserById(@PathVariable Long userid){
+        return ResponseEntity.ok(adminService.getUserById(userid));
+    }
+
+
+//    @GetMapping("/getAllRoles&Permission")
+//    public  ResponseEntity<ListOfRolesAndPermission> getAllRolesPermission(){
+//         return  ResponseEntity.ok(adminService.getAllRolesPermission());
+//    }
+
+
+
+
 
 }
