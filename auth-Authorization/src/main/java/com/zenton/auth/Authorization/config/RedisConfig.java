@@ -1,6 +1,7 @@
 package com.zenton.auth.Authorization.config;
 
 import org.hibernate.sql.Template;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -18,6 +19,10 @@ RedisTemplate
     docker exec -it auth-authorization-redis-1 redis-cli
  */
 @Configuration
+@ConditionalOnProperty(
+        name = "redis.enabled",
+        havingValue = "true"
+)
 public class RedisConfig {
     @Bean
     public RedisTemplate<String,Object> redisTemplate(RedisConnectionFactory redisConnectionFactory){

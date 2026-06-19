@@ -1,7 +1,9 @@
-package com.zenton.auth.Authorization.service;
+package com.zenton.auth.Authorization.service.redisService;
 
 import com.zenton.auth.Authorization.dtos.types.CacheType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +11,11 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class CacheService {
+@ConditionalOnProperty(
+        name = "redis.enabled",
+        havingValue = "true"
+)
+public class RedisCacheService implements CacheService{
 
     private final RedisTemplate<String,Object> redisTemplate;
 
@@ -18,6 +24,7 @@ public class CacheService {
     }
 
 
+    @Override
     public <T> void save(
             CacheType type,
             String key,
@@ -32,6 +39,7 @@ public class CacheService {
         );
     }
 
+    @Override
     public <T> T get(
             CacheType type,
             String Key,

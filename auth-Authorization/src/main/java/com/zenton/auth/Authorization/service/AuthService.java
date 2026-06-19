@@ -12,12 +12,12 @@ import com.zenton.auth.Authorization.entity.Role;
 import com.zenton.auth.Authorization.entity.User;
 import com.zenton.auth.Authorization.repository.RoleRepository;
 import com.zenton.auth.Authorization.repository.UserRepository;
+import com.zenton.auth.Authorization.service.redisService.CacheService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUtil authUtil;
     private final RefreshTokenService refreshTokenService;
-    private final CacheService cacheService;
+    private final CacheService redisCacheService;
     private final SecurityConfigUtil securityConfigUtil;
     private final RoleRepository roleRepository;
 
@@ -125,7 +125,7 @@ public class AuthService {
 
         if(refreshToken != null){
             long remainingMillis = jwtClaimsDto.getExpirationTime().getTime()-System.currentTimeMillis();
-            cacheService.save(CacheType.blackListedJwt,jwtClaimsDto.getJti(),"revoked",Duration.ofMillis(remainingMillis));
+            redisCacheService.save(CacheType.blackListedJwt,jwtClaimsDto.getJti(),"revoked",Duration.ofMillis(remainingMillis));
             refreshTokenService.delete(refreshToken);
         }
         return new LogoutResponseDto(authenticatedUser.getUsername(),"User has been logged out successfully!");
