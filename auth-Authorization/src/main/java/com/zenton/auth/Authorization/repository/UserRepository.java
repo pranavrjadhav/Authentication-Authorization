@@ -20,6 +20,18 @@ public interface UserRepository extends JpaRepository<User,Long> {
 """)
     Optional<User> findByUsernameWithRolesAndPermissions(@Param("username") String username);
 
+// I am doing these due make a single query for user /roles/permission  filter on userCode field across all;
+
+    @Query("""
+          SELECT DISTINCT u
+                  FROM User u
+                  LEFT JOIN FETCH u.roles r
+                  LEFT JOIN FETCH r.permissions
+                  WHERE u.id = :userId
+""")
+    Optional<User> findByUserIdWithRolesAndPermissions(@Param("userId") Long userId);
+
+
 
     Page<User> findAll(Pageable pageable);
 

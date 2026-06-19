@@ -44,3 +44,12 @@ public class User{
     private LocalDateTime updatedAt;
 
 }
+
+// add @Column(unique = true, nullable = false)
+//private String userCode;
+
+//user.setUserCode(
+//        "USR_" + UUID.randomUUID()
+//);
+
+// examaple :-- USR_550e8400-e29b-41d4-a716-446655440000   /  expose :--- USR_8f4c2a7b
