@@ -27,6 +27,8 @@ public class User{
     private String username;
     @Column(unique = true,nullable = false)
     private String password;
+    @Column(unique = true,nullable = false)
+    private  String email;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

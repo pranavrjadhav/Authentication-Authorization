@@ -27,7 +27,7 @@ public class AdminService {
     private final RoleRepository roleRepository;
     private final PermissionsRepository permissionsRepository;
 
-    public Page<UserGetAllDto> getAllUsers(
+    public PageResponse getAllUsers(
             int page,
             int size,
             String username
@@ -47,9 +47,18 @@ public class AdminService {
             );
         }
 
-        return users.map(user ->
-                new UserGetAllDto(user.getId(), user.getUsername())
-                );
+        return new PageResponse<>(
+                users.getContent().stream().map(x-> new UserGetAllDto(
+                        x.getId(),
+                        x.getUsername()
+                )).toList(),
+                users.getNumber(),
+                users.getSize(),
+                users.getTotalElements(),
+                users.getTotalPages(),
+                users.isFirst(),
+                users.isLast()
+        );
 
     }
 
@@ -99,5 +108,12 @@ public class AdminService {
         return ListOfRolesAndPermission.builder()
                         .roles(roles).permissions(permissionDtos)
                 .build();
+    }
+
+    public String updateUserByAdmin(UserUpdateRequest userUpdateRequest) {
+        boolean exists = userRepository.existsById(userUpdateRequest.getId());
+        return "hi";
+
+
     }
 }
