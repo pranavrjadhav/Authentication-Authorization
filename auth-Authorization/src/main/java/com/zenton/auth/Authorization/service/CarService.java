@@ -23,7 +23,7 @@ public class CarService {
     private final SecurityConfigUtil securityConfigUtil;
     private final UserRepository userRepository;
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public Car createCar(CarDto dto) {
         AuthenticatedUser authenticatedUser = securityConfigUtil.getCurrentUser();
        Car car = Car.builder()
@@ -36,7 +36,7 @@ public class CarService {
         return carRepository.save(car);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public List<Car> getAllCars() {
         AuthenticatedUser authenticatedUser = securityConfigUtil.getCurrentUser();
         return carRepository.findByUserId(authenticatedUser.getId());

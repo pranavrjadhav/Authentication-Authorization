@@ -1,8 +1,6 @@
 package com.zenton.auth.Authorization.controller;
 
-import com.zenton.auth.Authorization.dtos.Admindtos.ListOfRolesAndPermission;
-import com.zenton.auth.Authorization.dtos.Admindtos.UserGetAllDto;
-import com.zenton.auth.Authorization.dtos.Admindtos.UserGetByIdDto;
+import com.zenton.auth.Authorization.dtos.Admindtos.*;
 import com.zenton.auth.Authorization.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +25,7 @@ public class AdminController {
     //Page 9 -> 91-95
 
     @GetMapping("/getalluser")
-    public ResponseEntity<Page<UserGetAllDto>> getAllUser(
+    public ResponseEntity<PageResponse> getAllUser(
     @RequestParam(defaultValue = "0") int page,
     @RequestParam(defaultValue = "10") int size,
     @RequestParam(required = false) String username){
@@ -49,7 +47,9 @@ public class AdminController {
     }
 
 
-
+    public ResponseEntity<String> updateUserDataByAdmin(UserUpdateRequest userUpdateRequest){
+        return ResponseEntity.ok(adminService.updateUserByAdmin(userUpdateRequest));
+    }
 
 
 }
